@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: ports/rp2/mpconfigport.h
+@@
+-// existing config...
++// Enable USB + HID
++#define MICROPY_HW_ENABLE_USB      (1)
++#define MICROPY_HW_USB_VID         (0xCafe)
++#define MICROPY_HW_USB_PID         (0x4011)
++#define MICROPY_HW_USB_CDC         (1)
++#define MICROPY_HW_USB_HID         (1)
+*** End Patch
