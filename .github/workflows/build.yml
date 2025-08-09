@@ -14,6 +14,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Clone MicroPython source
+        run: |
+          git clone https://github.com/micropython/micropython.git
+          cd micropython
+          git submodule update --init --recursive
+
       - name: Install deps
         run: |
           sudo apt update
@@ -21,14 +27,15 @@ jobs:
 
       - name: Setup pico-sdk
         run: |
-          if [ ! -d ports/rp2/pico-sdk ]; then
-            git clone https://github.com/raspberrypi/pico-sdk.git ports/rp2/pico-sdk
-            cd ports/rp2/pico-sdk && git submodule update --init
+          if [ ! -d micropython/ports/rp2/pico-sdk ]; then
+            git clone https://github.com/raspberrypi/pico-sdk.git micropython/ports/rp2/pico-sdk
+            cd micropython/ports/rp2/pico-sdk && git submodule update --init
           fi
 
       - name: Apply HID patch
         run: |
-          git apply patches/mpconfigport.h.patch || true
+          cd micropython
+          git apply ../patches/mpconfigport.h.patch || true
 
       - name: Build MicroPython
         env:
