@@ -9,7 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      BOARD: RPI_PICO2_W   # <- Pico 2 W (use RPI_PICO ou RPI_PICO_W para os antigos)
+      BOARD: RPI_PICO2_W
+      PICO_SDK_PATH: ${{ github.workspace }}/micropython/ports/rp2/pico-sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,9 +28,9 @@ jobs:
 
       - name: Setup pico-sdk
         run: |
-          if [ ! -d micropython/ports/rp2/pico-sdk ]; then
-            git clone https://github.com/raspberrypi/pico-sdk.git micropython/ports/rp2/pico-sdk
-            (cd micropython/ports/rp2/pico-sdk && git submodule update --init)
+          if [ ! -d "${PICO_SDK_PATH}" ]; then
+            git clone https://github.com/raspberrypi/pico-sdk.git "${PICO_SDK_PATH}"
+            (cd "${PICO_SDK_PATH}" && git submodule update --init)
           fi
 
       - name: Apply HID patch
@@ -40,11 +41,18 @@ jobs:
       - name: Build MicroPython
         run: |
           cd micropython/ports/rp2
+          make clean || true
           make submodules
-          make BOARD=${BOARD}
+          make BOARD="${BOARD}" V=1
+          echo "=== Listando build dir ==="
+          ls -lah "build-${BOARD}" || true
+          echo "=== Procurando UF2 ==="
+          find "build-${BOARD}" -name '*.uf2' -maxdepth 2
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: firmware-uf2
-          path: micropython/ports/rp2/build-${{ env.BOARD }}/firmware.uf2
+          path: |
+            micropython/ports/rp2/build-${{ env.BOARD }}/*.uf2
+          if-no-files-found: error
