@@ -8,11 +8,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BOARD: RPI_PICO2_W   # <- Pico 2 W (use RPI_PICO ou RPI_PICO_W para os antigos)
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Clone MicroPython source
         run: |
@@ -29,7 +29,7 @@ jobs:
         run: |
           if [ ! -d micropython/ports/rp2/pico-sdk ]; then
             git clone https://github.com/raspberrypi/pico-sdk.git micropython/ports/rp2/pico-sdk
-            cd micropython/ports/rp2/pico-sdk && git submodule update --init
+            (cd micropython/ports/rp2/pico-sdk && git submodule update --init)
           fi
 
       - name: Apply HID patch
@@ -38,8 +38,6 @@ jobs:
           git apply ../patches/mpconfigport.h.patch || true
 
       - name: Build MicroPython
-        env:
-          BOARD: PICO
         run: |
           cd micropython/ports/rp2
           make submodules
@@ -49,4 +47,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: firmware-uf2
-          path: micropython/ports/rp2/build-PICO/firmware.uf2
+          path: micropython/ports/rp2/build-${{ env.BOARD }}/firmware.uf2
