@@ -1,0 +1,6 @@
+# Build artifacts
+micropython/
+**/build-*/
+*.uf2
+*.zip
+__pycache__/
